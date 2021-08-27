@@ -29,11 +29,17 @@ function autoupdate {
 }
 
 function useofficial {
+    ars='0'
     exchange=$(echo $data | jq '.[0].casa.venta')
 }
 
 function useblue {
+    ars='0'
     exchange=$(echo $data | jq '.[1].casa.venta')
+}
+
+function usears {
+    ars='1'
 }
 
 function showexchange {
@@ -42,7 +48,7 @@ function showexchange {
 }
 
 function showhelp {
-    echo "Usage: usdtoars <option> <value1> <value2>"
+    echo "Usage: usdtoars <option> <value>"
     echo "-a,--autoupdate        Autoupdate"
     echo "-u,--update            Force Update"
     echo "--get-official         Show official exchange value"
@@ -51,6 +57,17 @@ function showhelp {
     echo "--use-blue             Use blue value to convert"
     echo "--use-ars              Convert from ars to usd official"
     echo "--use-ars-blue         Convert from ars to usd blue"
+}
+
+function convert {
+    _exchange=$(echo $exchange | grep -o '[0-9]\+' | head -n1)
+    if [ $ars = '1' ]
+    then
+        _calc=$(($value / $_exchange))
+    else
+        _calc=$(($_exchange * $value))
+    fi
+    echo $_calc
 }
 
 case $1 in
@@ -71,17 +88,28 @@ case $1 in
         showexchange
         ;;
     "--use-official")
+        value=$2
         autoupdate
         useofficial
         convert
         ;;
     "--use-blue")
+        value=$2
         autoupdate
         useblue
         convert
         ;;
     "--use-ars")
+        value=$2
         autoupdate
+        useofficial
+        usears
+        convert
+        ;;
+    "--use-ars-blue")
+        value=$2
+        autoupdate
+        useblue
         usears
         convert
         ;;
