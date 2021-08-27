@@ -1,0 +1,84 @@
+#!/bin/sh
+
+function update {
+    data=$(curl -s -X GET -H 'Content-Type: application/json' 'https://www.dolarsi.com/api/api.php?type=dolar')
+}
+
+function autoupdate {
+    if [ -a /tmp/usdtoars.txt ]
+    then
+        data=$(date +'%s')
+        file_data=$(stat -c %Y /tmp/usdtoars.txt)
+        diff=$(expr $data - $file_data)
+        diff=$(expr $diff / 60)
+
+        if [ $diff -ge 10 ]
+        then
+            update
+        fi
+    else
+        update
+    fi
+}
+
+function useofficial {
+    exchange=$(echo $data | jq '.[0].casa.venta')
+}
+
+function useblue {
+    exchange=$(echo $data | jq '.[1].casa.venta')
+}
+
+function showexchange {
+    o=$(echo $exchange | grep -o '[0-9,]\+[1-9]')
+    echo $o
+}
+
+function showhelp {
+    echo "Usage: usdtoars <option> <value1> <value2>"
+    echo "-a,--autoupdate        Autoupdate"
+    echo "-u,--update            Force Update"
+    echo "--get-official         Show official exchange value"
+    echo "--get-blue             Show blue exchange value"
+    echo "--use-official         Use official value to convert"
+    echo "--use-blue             Use blue value to convert"
+    echo "--use-ars              Convert from ars to usd official"
+    echo "--use-ars-blue         Convert from ars to usd blue"
+}
+
+case $1 in
+    "-a" | "--autoupdate")
+        autoupdate
+        ;;
+    "-u" | "--update")
+        update
+        ;;
+    "--get-official")
+        autoupdate
+        useofficial
+        showexchange
+        ;;
+    "--get-blue")
+        autoupdate
+        useblue
+        showexchange
+        ;;
+    "--use-official")
+        autoupdate
+        useofficial
+        convert
+        ;;
+    "--use-blue")
+        autoupdate
+        useblue
+        convert
+        ;;
+    "--use-ars")
+        autoupdate
+        usears
+        convert
+        ;;
+    "" | "-h" | "--help")
+        showhelp
+        ;;
+esac
