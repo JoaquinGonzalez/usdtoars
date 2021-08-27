@@ -14,3 +14,12 @@ Usage: usdtoars <option> <value>
 --use-ars              Convert from ars to usd official
 --use-ars-blue         Convert from ars to usd blue
 ```
+## Example
+```
+$ usdtoars --get-official
+102,97
+```
+```
+$ usdtoars --use-official 1390
+141780
+```
