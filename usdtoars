@@ -2,19 +2,26 @@
 
 function update {
     data=$(curl -s -X GET -H 'Content-Type: application/json' 'https://www.dolarsi.com/api/api.php?type=dolar')
+    exec echo $data | jq > /tmp/usdtoars.txt
+}
+
+function gettemp {
+    data=$(cat /tmp/usdtoars.txt)
 }
 
 function autoupdate {
     if [ -a /tmp/usdtoars.txt ]
     then
-        data=$(date +'%s')
-        file_data=$(stat -c %Y /tmp/usdtoars.txt)
-        diff=$(expr $data - $file_data)
+        current_date=$(date +'%s')
+        file_date=$(stat -c %Y /tmp/usdtoars.txt)
+        diff=$(expr $current_date - $file_date)
         diff=$(expr $diff / 60)
 
         if [ $diff -ge 10 ]
         then
             update
+        else
+            gettemp
         fi
     else
         update
